@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Куб</title>
+    <title>Минималистичный 3D Куб</title>
     <style>
         body {
             background-color: #000;
@@ -12,8 +12,13 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            perspective: 1000px; /* Задаем перспективу для 3D-эффекта */
+            perspective: 1200px; /* Увеличиваем перспективу для более глубокого 3D */
             overflow: hidden;
+            cursor: grab; /* Меняем курсор на "захват" */
+        }
+
+        body:active {
+            cursor: grabbing; /* Курсор при активном перетаскивании */
         }
 
         .scene {
@@ -21,7 +26,9 @@
             height: 200px;
             position: relative;
             transform-style: preserve-3d;
-            transition: transform 0.1s linear; /* Плавный переход для вращения */
+            /* Начальное положение куба, чтобы он выглядел солидно */
+            transform: rotateX(-20deg) rotateY(45deg); 
+            transition: transform 0.1s linear; /* Плавное вращение */
         }
 
         .cube {
@@ -29,20 +36,27 @@
             height: 100%;
             position: absolute;
             transform-style: preserve-3d;
-            transform: translateZ(-100px);
+            transform: translateZ(-100px); /* Центрируем куб */
+            /* Общий градиент и свечение для всего куба */
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 70%);
+            box-shadow: 0 0 60px rgba(255, 255, 255, 0.6); /* Белое свечение */
         }
 
         .face {
             position: absolute;
             width: 200px;
             height: 200px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 0 40px rgba(0, 191, 255, 0.5); /* Добавляем свечение */
-            /* Градиент для более интересного вида */
-            background: radial-gradient(circle at center, rgba(0, 191, 255, 0.6) 0%, rgba(0, 191, 255, 0) 70%);
+            background-color: rgba(255, 255, 255, 0.1); /* Полупрозрачные белые грани */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* Тонкие белые границы */
+            display: flex; /* Для возможного центрирования содержимого, если понадобится */
+            justify-content: center;
+            align-items: center;
+            font-family: sans-serif; /* Для теста */
+            color: rgba(255, 255, 255, 0.8); /* Для теста */
+            font-size: 2em; /* Для теста */
         }
 
-        /* Располагаем грани в пространстве */
+        /* Располагаем грани */
         .front  { transform: rotateY(0deg) translateZ(100px); }
         .back   { transform: rotateY(180deg) translateZ(100px); }
         .right  { transform: rotateY(90deg) translateZ(100px); }
@@ -66,20 +80,40 @@
 
 <script>
     const scene = document.getElementById('scene');
-    
+    let isDragging = false;
+    let previousMouseX = 0;
+    let previousMouseY = 0;
+    let currentRotationX = -20; // Начальное вращение
+    let currentRotationY = 45;  // Начальное вращение
+
+    document.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        previousMouseX = e.clientX;
+        previousMouseY = e.clientY;
+        document.body.style.cursor = 'grabbing';
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+        document.body.style.cursor = 'grab';
+    });
+
     document.addEventListener('mousemove', (e) => {
-        // Получаем позицию курсора относительно центра экрана
-        const x = e.clientX;
-        const y = e.clientY;
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
+        if (!isDragging) return;
 
-        // Вычисляем угол поворота
-        const rotateY = (x - centerX) * 0.1;
-        const rotateX = (y - centerY) * -0.1;
+        const deltaX = e.clientX - previousMouseX;
+        const deltaY = e.clientY - previousMouseY;
 
-        // Применяем трансформацию к сцене
-        scene.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        currentRotationY += deltaX * 0.2; // Чувствительность вращения по Y
+        currentRotationX -= deltaY * 0.2; // Чувствительность вращения по X (инвертируем для интуитивности)
+
+        // Ограничиваем вращение по X, если это необходимо
+        // currentRotationX = Math.max(-90, Math.min(90, currentRotationX));
+
+        scene.style.transform = `rotateX(${currentRotationX}deg) rotateY(${currentRotationY}deg)`;
+
+        previousMouseX = e.clientX;
+        previousMouseY = e.clientY;
     });
 </script>
 
